@@ -1,55 +1,60 @@
 // pages/ProjectsPage.jsx
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProjectList from '../components/ui/ProjectList';
+import ProjectForm from '../components/ProjectForm/ProjectForm';
+import { useProject } from '../context/ProjectContext';
 
-const mockProjects = [
-	{
-		id: '1',
-		title: 'Тестовый проект',
-		description: 'Проект для тестирования отображения описания',
-		status: 'active',
-		createdAt: new Date('2024-01-15'),
-		tasks: [
-			{
-				id: 'test-1',
-				content: 'Тестовая задача с описанием',
-				description: 'Это тестовое описание которое ДОЛЖНО отображаться в карточке!',
-				status: 'todo',
-				priority: 'high',
-				assignee: 'Тестовый исполнитель',
-				createdAt: new Date('2024-01-16'),
-				dueDate: new Date('2024-02-01')
-			},
-			{
-				id: 'test-2',
-				content: 'Вторая тестовая задача',
-				description: 'Еще одно описание для проверки отображения',
-				status: 'inProgress',
-				priority: 'medium',
-				assignee: 'Другой исполнитель',
-				createdAt: new Date('2024-01-17'),
-				dueDate: new Date('2024-01-25')
-			},
-			{
-				id: 'test-3',
-				content: 'Задача без описания',
-				description: '', // Пустое описание
-				status: 'done',
-				priority: 'low',
-				assignee: '',
-				createdAt: new Date('2024-01-18')
-			}
-		]
-	}
-];
+const ProjectsPage = () => {
+	const navigate = useNavigate();
+	const { projects, addProject } = useProject();
+	const [showForm, setShowForm] = useState(false);
 
-const ProjectsPage = ({ onProjectSelect }) => {
+	const handleProjectSelect = (project) => {
+		navigate(`/projects/${project.id}`);
+	};
+
+	const handleAddProject = (projectData) => {
+		addProject(projectData);
+		setShowForm(false);
+	};
+
 	return (
 		<div style={{ maxWidth: '800px', margin: '0 auto' }}>
-			<ProjectList
-				projects={mockProjects}
-				onProjectSelect={onProjectSelect}
-			/>
+			<div style={{
+				display: 'flex',
+				justifyContent: 'space-between',
+				alignItems: 'center',
+				marginBottom: '2rem'
+			}}>
+				<h1 style={{ margin: 0 }}>Мои проекты</h1>
+				<button
+					onClick={() => setShowForm(true)}
+					style={{
+						padding: '0.75rem 1.5rem',
+						backgroundColor: '#007bff',
+						color: 'white',
+						border: 'none',
+						borderRadius: '4px',
+						cursor: 'pointer',
+						fontSize: '1rem'
+					}}
+				>
+					+ Создать проект
+				</button>
+			</div>
+
+			{showForm ? (
+				<ProjectForm
+					onSubmit={handleAddProject}
+					onCancel={() => setShowForm(false)}
+				/>
+			) : (
+				<ProjectList
+					projects={projects}
+					onProjectSelect={handleProjectSelect}
+				/>
+			)}
 		</div>
 	);
 };

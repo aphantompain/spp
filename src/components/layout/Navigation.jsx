@@ -1,71 +1,88 @@
 // components/layout/Navigation.jsx
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const Navigation = ({ onNavigate, currentPage }) => {
-	const navItems = [
-		{ key: 'home', label: 'Главная' },
-		{ key: 'projects', label: 'Проекты' },
-		{ key: 'profile', label: 'Профиль' }
-	];
+const Navigation = () => {
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	const getCurrentPage = () => {
+		const path = location.pathname;
+		if (path === '/') return 'home';
+		if (path.startsWith('/projects')) return 'projects';
+		if (path === '/profile') return 'profile';
+		return 'home';
+	};
+
+	const current = getCurrentPage();
 
 	return (
 		<nav style={{
 			backgroundColor: '#343a40',
 			padding: '1rem 2rem',
-			boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+			display: 'flex',
+			justifyContent: 'space-between',
+			alignItems: 'center'
 		}}>
 			<div style={{
 				display: 'flex',
-				justifyContent: 'space-between',
 				alignItems: 'center',
-				maxWidth: '1200px',
-				margin: '0 auto'
+				gap: '2rem'
 			}}>
-				{/* Логотип */}
-				<div style={{
+				<h1 style={{
 					color: 'white',
+					margin: 0,
 					fontSize: '1.5rem',
-					fontWeight: 'bold',
 					cursor: 'pointer'
-				}}
-					onClick={() => onNavigate('home')}
-				>
+				}} onClick={() => navigate('/')}>
 					TaskManager
-				</div>
+				</h1>
 
-				{/* Навигация */}
-				<div style={{ display: 'flex', gap: '2rem' }}>
-					{navItems.map(item => (
-						<button
-							key={item.key}
-							onClick={() => onNavigate(item.key)}
-							style={{
-								background: 'none',
-								border: 'none',
-								color: currentPage === item.key ? '#007bff' : 'white',
-								cursor: 'pointer',
-								fontSize: '1rem',
-								fontWeight: currentPage === item.key ? '600' : '400',
-								padding: '0.5rem 1rem',
-								borderRadius: '4px',
-								transition: 'all 0.2s ease'
-							}}
-							onMouseEnter={(e) => {
-								if (currentPage !== item.key) {
-									e.currentTarget.style.backgroundColor = '#495057';
-								}
-							}}
-							onMouseLeave={(e) => {
-								if (currentPage !== item.key) {
-									e.currentTarget.style.backgroundColor = 'transparent';
-								}
-							}}
-						>
-							{item.label}
-						</button>
-					))}
+				<div style={{ display: 'flex', gap: '1rem' }}>
+					<button
+						onClick={() => navigate('/')}
+						style={{
+							padding: '0.5rem 1rem',
+							backgroundColor: current === 'home' ? '#007bff' : 'transparent',
+							color: 'white',
+							border: 'none',
+							borderRadius: '4px',
+							cursor: 'pointer',
+							textDecoration: 'none'
+						}}
+					>
+						Главная
+					</button>
+					<button
+						onClick={() => navigate('/projects')}
+						style={{
+							padding: '0.5rem 1rem',
+							backgroundColor: current === 'projects' ? '#007bff' : 'transparent',
+							color: 'white',
+							border: 'none',
+							borderRadius: '4px',
+							cursor: 'pointer',
+							textDecoration: 'none'
+						}}
+					>
+						Проекты
+					</button>
 				</div>
 			</div>
+
+			<button
+				onClick={() => navigate('/profile')}
+				style={{
+					padding: '0.5rem 1rem',
+					backgroundColor: current === 'profile' ? '#007bff' : 'transparent',
+					color: 'white',
+					border: 'none',
+					borderRadius: '4px',
+					cursor: 'pointer'
+				}}
+			>
+				Профиль
+			</button>
 		</nav>
 	);
 };

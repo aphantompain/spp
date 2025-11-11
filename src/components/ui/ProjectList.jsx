@@ -1,114 +1,101 @@
-import React, { useState } from 'react';
-import ProjectCard from './ProjectCard';
+// components/ui/ProjectList.jsx
+import React from 'react';
 
 const ProjectList = ({ projects, onProjectSelect }) => {
-	const [filter, setFilter] = useState('all'); // all, active, completed
+	if (!projects || projects.length === 0) {
+		return (
+			<div style={{
+				textAlign: 'center',
+				padding: '3rem',
+				backgroundColor: 'white',
+				borderRadius: '8px',
+				boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+			}}>
+				<h3 style={{ color: '#666', marginBottom: '1rem' }}>Проектов пока нет</h3>
+				<p style={{ color: '#999' }}>Создайте свой первый проект!</p>
+			</div>
+		);
+	}
 
-	const filteredProjects = projects.filter(project => {
-		if (filter === 'all') return true;
-		if (filter === 'active') return project.status === 'active';
-		if (filter === 'completed') return project.status === 'completed';
-		return true;
-	});
-
-	const handleProjectClick = (project) => {
-		if (onProjectSelect) {
-			onProjectSelect(project);
+	// Функция для безопасного форматирования даты
+	const formatDate = (dateString) => {
+		try {
+			const date = new Date(dateString);
+			return date.toLocaleDateString();
+		} catch (error) {
+			console.error('Error formatting date:', error);
+			return 'Неизвестная дата';
 		}
 	};
 
 	return (
-		<div className="project-list">
-			{/* Фильтры */}
-			<div style={{
-				marginBottom: '1.5rem',
-				display: 'flex',
-				gap: '1rem',
-				alignItems: 'center'
-			}}>
-				<h2 style={{ margin: 0, marginRight: 'auto' }}>Мои проекты</h2>
-
-				<div style={{ display: 'flex', gap: '0.5rem' }}>
-					<button
-						onClick={() => setFilter('all')}
-						style={{
-							padding: '0.5rem 1rem',
-							border: '1px solid #007bff',
-							backgroundColor: filter === 'all' ? '#007bff' : 'white',
-							color: filter === 'all' ? 'white' : '#007bff',
-							borderRadius: '4px',
-							cursor: 'pointer',
-							fontSize: '0.9rem'
-						}}
-					>
-						Все ({projects.length})
-					</button>
-					<button
-						onClick={() => setFilter('active')}
-						style={{
-							padding: '0.5rem 1rem',
-							border: '1px solid #28a745',
-							backgroundColor: filter === 'active' ? '#28a745' : 'white',
-							color: filter === 'active' ? 'white' : '#28a745',
-							borderRadius: '4px',
-							cursor: 'pointer',
-							fontSize: '0.9rem'
-						}}
-					>
-						Активные ({projects.filter(p => p.status === 'active').length})
-					</button>
-					<button
-						onClick={() => setFilter('completed')}
-						style={{
-							padding: '0.5rem 1rem',
-							border: '1px solid #6c757d',
-							backgroundColor: filter === 'completed' ? '#6c757d' : 'white',
-							color: filter === 'completed' ? 'white' : '#6c757d',
-							borderRadius: '4px',
-							cursor: 'pointer',
-							fontSize: '0.9rem'
-						}}
-					>
-						Завершенные ({projects.filter(p => p.status === 'completed').length})
-					</button>
-				</div>
-			</div>
-
-			{/* Список проектов */}
-			<div>
-				{filteredProjects.length === 0 ? (
+		<div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+			{projects.map(project => (
+				<div
+					key={project.id}
+					onClick={() => onProjectSelect(project)}
+					style={{
+						backgroundColor: 'white',
+						padding: '1.5rem',
+						borderRadius: '8px',
+						boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+						cursor: 'pointer',
+						transition: 'all 0.2s ease',
+						border: '1px solid #e9ecef'
+					}}
+					onMouseEnter={(e) => {
+						e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.15)';
+						e.currentTarget.style.transform = 'translateY(-2px)';
+					}}
+					onMouseLeave={(e) => {
+						e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+						e.currentTarget.style.transform = 'translateY(0)';
+					}}
+				>
 					<div style={{
-						textAlign: 'center',
-						padding: '2rem',
-						color: '#666'
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'flex-start',
+						marginBottom: '0.5rem'
 					}}>
-						{filter === 'all'
-							? 'Проектов пока нет'
-							: `Нет проектов со статусом "${filter}"`}
+						<h3 style={{ margin: 0, color: '#333' }}>{project.title}</h3>
+						<span style={{
+							padding: '0.25rem 0.75rem',
+							backgroundColor: project.status === 'active' ? '#28a745' :
+								project.status === 'completed' ? '#6c757d' : '#ffc107',
+							color: 'white',
+							borderRadius: '12px',
+							fontSize: '0.8rem',
+							fontWeight: 'bold'
+						}}>
+							{project.status === 'active' ? 'Активный' :
+								project.status === 'completed' ? 'Завершен' : 'В архиве'}
+						</span>
 					</div>
-				) : (
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-						{filteredProjects.map(project => (
-							<ProjectCard
-								key={project.id}
-								project={project}
-								onProjectClick={onProjectSelect ? handleProjectClick : undefined}
-							/>
-						))}
-					</div>
-				)}
-			</div>
 
-			{/* Статистика */}
-			<div style={{
-				marginTop: '1.5rem',
-				padding: '1rem',
-				backgroundColor: '#f8f9fa',
-				borderRadius: '4px',
-				fontSize: '0.9rem'
-			}}>
-				<strong>Статистика:</strong> {filteredProjects.length} из {projects.length} проектов
-			</div>
+					{project.description && (
+						<p style={{
+							margin: '0.5rem 0',
+							color: '#666',
+							lineHeight: '1.4'
+						}}>
+							{project.description}
+						</p>
+					)}
+
+					<div style={{
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'center',
+						marginTop: '1rem',
+						fontSize: '0.9rem',
+						color: '#999'
+					}}>
+						<span>Задач: {project.tasks?.length || 0}</span>
+						<span>Создан: {formatDate(project.createdAt)}</span>
+					</div>
+				</div>
+			))}
 		</div>
 	);
 };

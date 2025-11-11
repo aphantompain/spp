@@ -1,22 +1,53 @@
 // pages/ProjectPage.jsx
-import React, { useState } from 'react';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import KanbanBoard from '../components/KanbanBoard/KanbanBoard';
+import { useProject } from '../context/ProjectContext';
 
-const ProjectPage = ({ project, onBack }) => {
-	const [currentProject, setCurrentProject] = useState(project);
+const ProjectPage = () => {
+	const { projectId } = useParams();
+	const navigate = useNavigate();
+	const { getProjectById, updateTask, deleteTask, moveTask, addTask } = useProject();
 
-	const handleTaskUpdate = (updatedTasks) => {
-		setCurrentProject(prev => ({
-			...prev,
-			tasks: updatedTasks
-		}));
+	const project = getProjectById(projectId);
+
+	if (!project) {
+		return (
+			<div style={{
+				textAlign: 'center',
+				padding: '2rem',
+				maxWidth: '1200px',
+				margin: '0 auto'
+			}}>
+				<h2>Проект не найден</h2>
+				<button onClick={() => navigate('/projects')}>
+					Вернуться к проектам
+				</button>
+			</div>
+		);
+	}
+
+	const handleTaskUpdate = (projectId, taskId, updates) => {
+		updateTask(projectId, taskId, updates);
+	};
+
+	const handleTaskDelete = (projectId, taskId) => {
+		deleteTask(projectId, taskId);
+	};
+
+	const handleTaskMove = (projectId, taskId, newStatus) => {
+		moveTask(projectId, taskId, newStatus);
+	};
+
+	const handleTaskAdd = (projectId, task) => {
+		addTask(projectId, task);
 	};
 
 	return (
 		<div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 			{/* Кнопка назад */}
 			<button
-				onClick={onBack}
+				onClick={() => navigate('/projects')}
 				style={{
 					marginBottom: '1.5rem',
 					padding: '0.5rem 1rem',
@@ -43,8 +74,11 @@ const ProjectPage = ({ project, onBack }) => {
 
 			{/* Kanban доска */}
 			<KanbanBoard
-				project={currentProject}
+				project={project}
 				onTaskUpdate={handleTaskUpdate}
+				onTaskDelete={handleTaskDelete}
+				onTaskMove={handleTaskMove}
+				onTaskAdd={handleTaskAdd}
 			/>
 		</div>
 	);

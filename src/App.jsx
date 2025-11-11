@@ -1,67 +1,45 @@
 // App.jsx
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/layout/Navigation';
 import HomePage from './pages/HomePage';
 import ProjectsPage from './pages/ProjectsPage';
+import ProjectPage from './pages/ProjectPage';
 import ProfilePage from './pages/ProfilePage';
-import ProjectPage from './pages/ProjectPage'; // Добавляем этот импорт
+import { ProjectProvider } from './context/ProjectContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
-function App() {
-	const [currentPage, setCurrentPage] = useState('home');
-	const [selectedProject, setSelectedProject] = useState(null);
-
-	const handleProjectSelect = (project) => {
-		console.log('Project selected:', project); // Для отладки
-		setSelectedProject(project);
-	};
-
-	const handleBackToList = () => {
-		setSelectedProject(null);
-	};
-
-	const handleNavigation = (page) => {
-		setSelectedProject(null);
-		setCurrentPage(page);
-	};
-
-	const renderPage = () => {
-		console.log('Selected project:', selectedProject); // Для отладки
-		console.log('Current page:', currentPage); // Для отладки
-
-		if (selectedProject) {
-			return (
-				<ProjectPage
-					project={selectedProject}
-					onBack={handleBackToList}
-				/>
-			);
-		}
-
-		switch (currentPage) {
-			case 'projects':
-				return <ProjectsPage onProjectSelect={handleProjectSelect} />;
-			case 'profile':
-				return <ProfilePage />;
-			default:
-				return <HomePage />;
-		}
-	};
-
+// Компонент для обертки навигации и основного контента
+function AppContent() {
 	return (
 		<div className="App">
-			<Navigation
-				onNavigate={handleNavigation}
-				currentPage={currentPage}
-			/>
+			<Navigation />
 			<main style={{
 				padding: '2rem',
 				minHeight: 'calc(100vh - 80px)',
 				backgroundColor: '#f8f9fa'
 			}}>
-				{renderPage()}
+				<ErrorBoundary>
+					<Routes>
+						<Route path="/" element={<HomePage />} />
+						<Route path="/projects" element={<ProjectsPage />} />
+						<Route path="/projects/:projectId" element={<ProjectPage />} />
+						<Route path="/profile" element={<ProfilePage />} />
+					</Routes>
+				</ErrorBoundary>
 			</main>
 		</div>
+	);
+}
+
+function App() {
+	return (
+		<ProjectProvider>
+			<Router>
+				<AppContent />
+			</Router>
+		</ProjectProvider>
 	);
 }
 
