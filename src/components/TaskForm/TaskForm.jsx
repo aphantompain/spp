@@ -1,287 +1,159 @@
 // components/TaskForm/TaskForm.jsx
 import React, { useState } from 'react';
 
-const TaskForm = ({ onSubmit, onCancel, initialStatus = 'todo' }) => {
+const TaskForm = ({ onSubmit, onCancel, initialStatus }) => {
 	const [formData, setFormData] = useState({
 		content: '',
 		description: '',
 		assignee: '',
-		status: initialStatus, // Важно: используем initialStatus
 		priority: 'medium',
-		dueDate: ''
+		dueDate: '',
+		status: initialStatus || 'todo'
 	});
-
-	const [errors, setErrors] = useState({});
-
-	const handleChange = (field, value) => {
-		setFormData(prev => ({ ...prev, [field]: value }));
-		if (errors[field]) {
-			setErrors(prev => ({ ...prev, [field]: '' }));
-		}
-	};
-
-	const validateForm = () => {
-		const newErrors = {};
-
-		if (!formData.content.trim()) {
-			newErrors.content = 'Название задачи обязательно';
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-
-		if (!validateForm()) {
-			return;
+		if (formData.content.trim()) {
+			onSubmit(formData);
+			setFormData({
+				content: '',
+				description: '',
+				assignee: '',
+				priority: 'medium',
+				dueDate: '',
+				status: initialStatus || 'todo'
+			});
 		}
+	};
 
-		const task = {
-			id: Date.now().toString(),
-			content: formData.content.trim(),
-			description: formData.description.trim(),
-			assignee: formData.assignee.trim(),
-			status: formData.status, // Используем выбранный статус из формы
-			priority: formData.priority,
-			createdAt: new Date(),
-			dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
-			tags: []
-		};
-
-		console.log('Creating task with status:', task.status); // Для отладки
-		onSubmit(task);
+	const handleChange = (field, value) => {
+		setFormData(prev => ({ ...prev, [field]: value }));
 	};
 
 	return (
 		<div style={{
 			backgroundColor: 'white',
-			borderRadius: '8px',
-			padding: '1.5rem',
-			boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-			border: '1px solid #e9ecef'
+			padding: '1rem',
+			borderRadius: '6px',
+			border: '1px solid #ddd'
 		}}>
-			<h3 style={{
-				margin: '0 0 1.5rem 0',
-				color: '#333',
-				fontSize: '1.25rem'
-			}}>
-				Создать новую задачу
-			</h3>
-
 			<form onSubmit={handleSubmit}>
-				{/* Название задачи */}
-				<div style={{ marginBottom: '1rem' }}>
-					<label style={{
-						display: 'block',
-						marginBottom: '0.5rem',
-						fontWeight: '500',
-						color: '#495057'
-					}}>
-						Название задачи *
-					</label>
+				<div style={{ marginBottom: '0.75rem' }}>
 					<input
 						type="text"
 						value={formData.content}
 						onChange={(e) => handleChange('content', e.target.value)}
-						placeholder="Введите название задачи..."
+						placeholder="Название задачи *"
 						style={{
 							width: '100%',
-							padding: '0.75rem',
-							border: `1px solid ${errors.content ? '#dc3545' : '#ddd'}`,
+							padding: '0.5rem',
+							border: '1px solid #ddd',
 							borderRadius: '4px',
-							fontSize: '1rem'
+							fontSize: '0.9rem'
 						}}
+						required
 					/>
-					{errors.content && (
-						<span style={{
-							color: '#dc3545',
-							fontSize: '0.8rem',
-							marginTop: '0.25rem',
-							display: 'block'
-						}}>
-							{errors.content}
-						</span>
-					)}
 				</div>
 
-				{/* Описание */}
-				<div style={{ marginBottom: '1rem' }}>
-					<label style={{
-						display: 'block',
-						marginBottom: '0.5rem',
-						fontWeight: '500',
-						color: '#495057'
-					}}>
-						Описание
-					</label>
+				<div style={{ marginBottom: '0.75rem' }}>
 					<textarea
 						value={formData.description}
 						onChange={(e) => handleChange('description', e.target.value)}
-						placeholder="Опишите детали задачи..."
+						placeholder="Описание"
 						style={{
 							width: '100%',
-							padding: '0.75rem',
+							padding: '0.5rem',
 							border: '1px solid #ddd',
 							borderRadius: '4px',
-							fontSize: '1rem',
-							minHeight: '80px',
+							fontSize: '0.9rem',
+							minHeight: '60px',
 							resize: 'vertical'
 						}}
 					/>
 				</div>
 
-				{/* Исполнитель и статус */}
 				<div style={{
 					display: 'grid',
 					gridTemplateColumns: '1fr 1fr',
-					gap: '1rem',
-					marginBottom: '1rem'
+					gap: '0.5rem',
+					marginBottom: '0.75rem'
 				}}>
-					<div>
-						<label style={{
-							display: 'block',
-							marginBottom: '0.5rem',
-							fontWeight: '500',
-							color: '#495057'
-						}}>
-							Исполнитель
-						</label>
-						<input
-							type="text"
-							value={formData.assignee}
-							onChange={(e) => handleChange('assignee', e.target.value)}
-							placeholder="Имя исполнителя"
-							style={{
-								width: '100%',
-								padding: '0.75rem',
-								border: '1px solid #ddd',
-								borderRadius: '4px',
-								fontSize: '1rem'
-							}}
-						/>
-					</div>
+					<input
+						type="text"
+						value={formData.assignee}
+						onChange={(e) => handleChange('assignee', e.target.value)}
+						placeholder="Исполнитель"
+						style={{
+							width: '100%',
+							padding: '0.5rem',
+							border: '1px solid #ddd',
+							borderRadius: '4px',
+							fontSize: '0.9rem'
+						}}
+					/>
 
-					<div>
-						<label style={{
-							display: 'block',
-							marginBottom: '0.5rem',
-							fontWeight: '500',
-							color: '#495057'
-						}}>
-							Статус
-						</label>
-						<select
-							value={formData.status}
-							onChange={(e) => handleChange('status', e.target.value)}
-							style={{
-								width: '100%',
-								padding: '0.75rem',
-								border: '1px solid #ddd',
-								borderRadius: '4px',
-								fontSize: '1rem',
-								backgroundColor: 'white'
-							}}
-						>
-							<option value="todo">To Do</option>
-							<option value="inProgress">In Progress</option>
-							<option value="done">Done</option>
-						</select>
-					</div>
+					<select
+						value={formData.priority}
+						onChange={(e) => handleChange('priority', e.target.value)}
+						style={{
+							width: '100%',
+							padding: '0.5rem',
+							border: '1px solid #ddd',
+							borderRadius: '4px',
+							fontSize: '0.9rem'
+						}}
+					>
+						<option value="low">Низкий</option>
+						<option value="medium">Средний</option>
+						<option value="high">Высокий</option>
+					</select>
 				</div>
 
-				{/* Приоритет и срок */}
-				<div style={{
-					display: 'grid',
-					gridTemplateColumns: '1fr 1fr',
-					gap: '1rem',
-					marginBottom: '1.5rem'
-				}}>
-					<div>
-						<label style={{
-							display: 'block',
-							marginBottom: '0.5rem',
-							fontWeight: '500',
-							color: '#495057'
-						}}>
-							Приоритет
-						</label>
-						<select
-							value={formData.priority}
-							onChange={(e) => handleChange('priority', e.target.value)}
-							style={{
-								width: '100%',
-								padding: '0.75rem',
-								border: '1px solid #ddd',
-								borderRadius: '4px',
-								fontSize: '1rem',
-								backgroundColor: 'white'
-							}}
-						>
-							<option value="low">Низкий</option>
-							<option value="medium">Средний</option>
-							<option value="high">Высокий</option>
-						</select>
-					</div>
-
-					<div>
-						<label style={{
-							display: 'block',
-							marginBottom: '0.5rem',
-							fontWeight: '500',
-							color: '#495057'
-						}}>
-							Срок выполнения
-						</label>
-						<input
-							type="date"
-							value={formData.dueDate}
-							onChange={(e) => handleChange('dueDate', e.target.value)}
-							style={{
-								width: '100%',
-								padding: '0.75rem',
-								border: '1px solid #ddd',
-								borderRadius: '4px',
-								fontSize: '1rem'
-							}}
-						/>
-					</div>
+				<div style={{ marginBottom: '0.75rem' }}>
+					<input
+						type="date"
+						value={formData.dueDate}
+						onChange={(e) => handleChange('dueDate', e.target.value)}
+						style={{
+							width: '100%',
+							padding: '0.5rem',
+							border: '1px solid #ddd',
+							borderRadius: '4px',
+							fontSize: '0.9rem'
+						}}
+					/>
 				</div>
 
-				<div style={{
-					display: 'flex',
-					gap: '1rem',
-					justifyContent: 'flex-end'
-				}}>
+				<div style={{ display: 'flex', gap: '0.5rem' }}>
+					<button
+						type="submit"
+						style={{
+							flex: 1,
+							padding: '0.5rem',
+							backgroundColor: '#28a745',
+							color: 'white',
+							border: 'none',
+							borderRadius: '4px',
+							cursor: 'pointer',
+							fontSize: '0.9rem'
+						}}
+					>
+						Добавить
+					</button>
 					<button
 						type="button"
 						onClick={onCancel}
 						style={{
-							padding: '0.75rem 1.5rem',
+							padding: '0.5rem 1rem',
 							backgroundColor: '#6c757d',
 							color: 'white',
 							border: 'none',
 							borderRadius: '4px',
 							cursor: 'pointer',
-							fontSize: '1rem'
+							fontSize: '0.9rem'
 						}}
 					>
 						Отмена
-					</button>
-					<button
-						type="submit"
-						style={{
-							padding: '0.75rem 1.5rem',
-							backgroundColor: '#007bff',
-							color: 'white',
-							border: 'none',
-							borderRadius: '4px',
-							cursor: 'pointer',
-							fontSize: '1rem'
-						}}
-					>
-						Создать задачу
 					</button>
 				</div>
 			</form>

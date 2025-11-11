@@ -1,9 +1,9 @@
 // components/KanbanBoard/KanbanBoard.jsx
 import React, { useState } from 'react';
 import KanbanColumn from './KanbanColumn';
+import TaskForm from '../TaskForm/TaskForm';
 
-const KanbanBoard = ({ project, onTaskUpdate }) => {
-	const [tasks, setTasks] = useState(project.tasks || []);
+const KanbanBoard = ({ project, onTaskUpdate, onTaskDelete, onTaskMove, onTaskAdd }) => {
 	const [editingTask, setEditingTask] = useState(null);
 
 	const columns = [
@@ -12,59 +12,36 @@ const KanbanBoard = ({ project, onTaskUpdate }) => {
 		{ id: 'done', title: 'Done', color: '#28a745' }
 	];
 
-	const handleTaskMove = (taskId, newStatus) => {
-		const updatedTasks = tasks.map(task =>
-			task.id === taskId ? { ...task, status: newStatus } : task
-		);
-
-		setTasks(updatedTasks);
-		if (onTaskUpdate) {
-			onTaskUpdate(updatedTasks);
+	// Функция для безопасного форматирования даты
+	const formatDate = (dateString) => {
+		try {
+			const date = new Date(dateString);
+			return date.toLocaleDateString();
+		} catch (error) {
+			console.error('Error formatting date:', error);
+			return 'Неизвестная дата';
 		}
+	};
+
+	const handleTaskMove = (taskId, newStatus) => {
+		onTaskMove(project.id, taskId, newStatus);
 	};
 
 	const handleAddTask = (columnId, task) => {
-		const newTask = {
-			...task,
-			id: Date.now().toString(),
-			status: columnId,
-			createdAt: new Date()
-		};
-
-		const updatedTasks = [...tasks, newTask];
-		setTasks(updatedTasks);
-
-		if (onTaskUpdate) {
-			onTaskUpdate(updatedTasks);
-		}
+		onTaskAdd(project.id, { ...task, status: columnId });
 	};
 
 	const handleDeleteTask = (taskId) => {
-		const updatedTasks = tasks.filter(task => task.id !== taskId);
-		setTasks(updatedTasks);
-
-		if (onTaskUpdate) {
-			onTaskUpdate(updatedTasks);
-		}
+		onTaskDelete(project.id, taskId);
 	};
 
-	// Функция редактирования
 	const handleEditTask = (task) => {
 		setEditingTask(task);
 	};
 
-	// Функция сохранения изменений
 	const handleUpdateTask = (updatedTask) => {
-		const updatedTasks = tasks.map(task =>
-			task.id === updatedTask.id ? updatedTask : task
-		);
-
-		setTasks(updatedTasks);
+		onTaskUpdate(project.id, updatedTask.id, updatedTask);
 		setEditingTask(null);
-
-		if (onTaskUpdate) {
-			onTaskUpdate(updatedTasks);
-		}
 	};
 
 	return (
@@ -82,6 +59,15 @@ const KanbanBoard = ({ project, onTaskUpdate }) => {
 				<p style={{ margin: '0 0 1rem 0', color: '#666' }}>
 					{project.description}
 				</p>
+				<div style={{
+					display: 'flex',
+					gap: '1rem',
+					fontSize: '0.9rem',
+					color: '#666'
+				}}>
+					<span>Задач: {project.tasks?.length || 0}</span>
+					<span>Создан: {formatDate(project.createdAt)}</span>
+				</div>
 			</div>
 
 			{/* Kanban доска */}
@@ -94,11 +80,11 @@ const KanbanBoard = ({ project, onTaskUpdate }) => {
 					<KanbanColumn
 						key={column.id}
 						column={column}
-						tasks={tasks.filter(task => task.status === column.id)}
+						tasks={project.tasks?.filter(task => task.status === column.id) || []}
 						onTaskMove={handleTaskMove}
 						onAddTask={handleAddTask}
 						onDeleteTask={handleDeleteTask}
-						onEditTask={handleEditTask} // Передаем функцию редактирования
+						onEditTask={handleEditTask}
 					/>
 				))}
 			</div>
@@ -115,13 +101,24 @@ const KanbanBoard = ({ project, onTaskUpdate }) => {
 	);
 };
 
-// Компонент модального окна редактирования
+// Компонент модального окна редактирования (обновленный)
 const EditTaskModal = ({ task, onSave, onCancel }) => {
-	const [formData, setFormData] = useState(task);
+	const [formData, setFormData] = useState({
+		...task,
+		// Преобразуем строку даты обратно в формат для input type="date"
+		dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''
+	});
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		onSave(formData);
+
+		// Преобразуем дату обратно в ISO строку для сохранения
+		const taskToSave = {
+			...formData,
+			dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
+		};
+
+		onSave(taskToSave);
 	};
 
 	const handleChange = (field, value) => {
@@ -146,14 +143,16 @@ const EditTaskModal = ({ task, onSave, onCancel }) => {
 				padding: '2rem',
 				borderRadius: '8px',
 				width: '90%',
-				maxWidth: '500px'
+				maxWidth: '500px',
+				maxHeight: '90vh',
+				overflow: 'auto'
 			}}>
 				<h3 style={{ margin: '0 0 1.5rem 0' }}>Редактировать задачу</h3>
 
 				<form onSubmit={handleSubmit}>
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-							Название:
+							Название *
 						</label>
 						<input
 							type="text"
@@ -172,7 +171,7 @@ const EditTaskModal = ({ task, onSave, onCancel }) => {
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-							Описание:
+							Описание
 						</label>
 						<textarea
 							value={formData.description}
@@ -185,6 +184,64 @@ const EditTaskModal = ({ task, onSave, onCancel }) => {
 								fontSize: '1rem',
 								minHeight: '100px',
 								resize: 'vertical'
+							}}
+						/>
+					</div>
+
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+							Исполнитель
+						</label>
+						<input
+							type="text"
+							value={formData.assignee}
+							onChange={(e) => handleChange('assignee', e.target.value)}
+							style={{
+								width: '100%',
+								padding: '0.5rem',
+								border: '1px solid #ddd',
+								borderRadius: '4px',
+								fontSize: '1rem'
+							}}
+							placeholder="Введите имя исполнителя"
+						/>
+					</div>
+
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+							Приоритет
+						</label>
+						<select
+							value={formData.priority}
+							onChange={(e) => handleChange('priority', e.target.value)}
+							style={{
+								width: '100%',
+								padding: '0.5rem',
+								border: '1px solid #ddd',
+								borderRadius: '4px',
+								fontSize: '1rem'
+							}}
+						>
+							<option value="low">Низкий</option>
+							<option value="medium">Средний</option>
+							<option value="high">Высокий</option>
+						</select>
+					</div>
+
+					<div style={{ marginBottom: '1.5rem' }}>
+						<label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+							Срок выполнения
+						</label>
+						<input
+							type="date"
+							value={formData.dueDate}
+							onChange={(e) => handleChange('dueDate', e.target.value)}
+							style={{
+								width: '100%',
+								padding: '0.5rem',
+								border: '1px solid #ddd',
+								borderRadius: '4px',
+								fontSize: '1rem'
 							}}
 						/>
 					</div>
