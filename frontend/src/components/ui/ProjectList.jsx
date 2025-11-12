@@ -1,7 +1,12 @@
 // components/ui/ProjectList.jsx
 import React from 'react';
+import LoadingSpinner from './LoadingSpinner';
 
-const ProjectList = ({ projects, onProjectSelect }) => {
+const ProjectList = ({ projects, onProjectSelect, loading = false }) => {
+	if (loading && projects.length === 0) {
+		return <LoadingSpinner />;
+	}
+
 	if (!projects || projects.length === 0) {
 		return (
 			<div style={{
@@ -20,6 +25,7 @@ const ProjectList = ({ projects, onProjectSelect }) => {
 	// Функция для безопасного форматирования даты
 	const formatDate = (dateString) => {
 		try {
+			if (!dateString) return 'Неизвестная дата';
 			const date = new Date(dateString);
 			return date.toLocaleDateString();
 		} catch (error) {
@@ -33,7 +39,10 @@ const ProjectList = ({ projects, onProjectSelect }) => {
 			{projects.map(project => (
 				<div
 					key={project.id}
-					onClick={() => onProjectSelect(project)}
+					onClick={() => {
+						console.log('Project clicked:', project.id); // Для отладки
+						onProjectSelect(project);
+					}}
 					style={{
 						backgroundColor: 'white',
 						padding: '1.5rem',

@@ -10,7 +10,6 @@ import { ProjectProvider } from './context/ProjectContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
-// Компонент для обертки навигации и основного контента
 function AppContent() {
 	return (
 		<div className="App">
