@@ -1,7 +1,7 @@
 // components/ProjectForm/ProjectForm.jsx
 import React, { useState } from 'react';
 
-const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
+const ProjectForm = ({ onSubmit, onCancel, initialData, loading = false }) => {
 	const [formData, setFormData] = useState(initialData || {
 		title: '',
 		description: '',
@@ -10,9 +10,11 @@ const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		if (formData.title.trim()) {
+		if (formData.title.trim() && !loading) {
 			onSubmit(formData);
-			setFormData({ title: '', description: '', status: 'active' });
+			if (!initialData) {
+				setFormData({ title: '', description: '', status: 'active' });
+			}
 		}
 	};
 
@@ -26,7 +28,8 @@ const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
 			padding: '2rem',
 			borderRadius: '8px',
 			boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-			marginBottom: '2rem'
+			marginBottom: '2rem',
+			opacity: loading ? 0.6 : 1
 		}}>
 			<h3 style={{ margin: '0 0 1.5rem 0' }}>
 				{initialData ? 'Редактировать проект' : 'Создать новый проект'}
@@ -41,12 +44,14 @@ const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
 						type="text"
 						value={formData.title}
 						onChange={(e) => handleChange('title', e.target.value)}
+						disabled={loading}
 						style={{
 							width: '100%',
 							padding: '0.75rem',
 							border: '1px solid #ddd',
 							borderRadius: '4px',
-							fontSize: '1rem'
+							fontSize: '1rem',
+							opacity: loading ? 0.6 : 1
 						}}
 						required
 						placeholder="Введите название проекта"
@@ -60,6 +65,7 @@ const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
 					<textarea
 						value={formData.description}
 						onChange={(e) => handleChange('description', e.target.value)}
+						disabled={loading}
 						style={{
 							width: '100%',
 							padding: '0.75rem',
@@ -67,7 +73,8 @@ const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
 							borderRadius: '4px',
 							fontSize: '1rem',
 							minHeight: '100px',
-							resize: 'vertical'
+							resize: 'vertical',
+							opacity: loading ? 0.6 : 1
 						}}
 						placeholder="Опишите ваш проект"
 					/>
@@ -80,12 +87,14 @@ const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
 					<select
 						value={formData.status}
 						onChange={(e) => handleChange('status', e.target.value)}
+						disabled={loading}
 						style={{
 							width: '100%',
 							padding: '0.75rem',
 							border: '1px solid #ddd',
 							borderRadius: '4px',
-							fontSize: '1rem'
+							fontSize: '1rem',
+							opacity: loading ? 0.6 : 1
 						}}
 					>
 						<option value="active">Активный</option>
@@ -98,29 +107,33 @@ const ProjectForm = ({ onSubmit, onCancel, initialData }) => {
 					<button
 						type="button"
 						onClick={onCancel}
+						disabled={loading}
 						style={{
 							padding: '0.75rem 1.5rem',
 							backgroundColor: '#6c757d',
 							color: 'white',
 							border: 'none',
 							borderRadius: '4px',
-							cursor: 'pointer'
+							cursor: loading ? 'not-allowed' : 'pointer',
+							opacity: loading ? 0.6 : 1
 						}}
 					>
 						Отмена
 					</button>
 					<button
 						type="submit"
+						disabled={loading}
 						style={{
 							padding: '0.75rem 1.5rem',
 							backgroundColor: '#007bff',
 							color: 'white',
 							border: 'none',
 							borderRadius: '4px',
-							cursor: 'pointer'
+							cursor: loading ? 'not-allowed' : 'pointer',
+							opacity: loading ? 0.6 : 1
 						}}
 					>
-						{initialData ? 'Сохранить' : 'Создать проект'}
+						{loading ? 'Сохранение...' : (initialData ? 'Сохранить' : 'Создать проект')}
 					</button>
 				</div>
 			</form>

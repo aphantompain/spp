@@ -15,6 +15,7 @@ const KanbanBoard = ({ project, onTaskUpdate, onTaskDelete, onTaskMove, onTaskAd
 	// Функция для безопасного форматирования даты
 	const formatDate = (dateString) => {
 		try {
+			if (!dateString) return 'Неизвестная дата';
 			const date = new Date(dateString);
 			return date.toLocaleDateString();
 		} catch (error) {
@@ -24,24 +25,37 @@ const KanbanBoard = ({ project, onTaskUpdate, onTaskDelete, onTaskMove, onTaskAd
 	};
 
 	const handleTaskMove = (taskId, newStatus) => {
+		console.log('Moving task:', taskId, 'to:', newStatus);
 		onTaskMove(project.id, taskId, newStatus);
 	};
 
-	const handleAddTask = (columnId, task) => {
-		onTaskAdd(project.id, { ...task, status: columnId });
+	const handleAddTask = async (columnId, task) => {
+		try {
+			await onTaskAdd(project.id, { ...task, status: columnId });
+		} catch (error) {
+			console.error('Error adding task:', error);
+			throw error;
+		}
 	};
 
 	const handleDeleteTask = (taskId) => {
+		console.log('Deleting task:', taskId);
 		onTaskDelete(project.id, taskId);
 	};
 
 	const handleEditTask = (task) => {
+		console.log('Editing task:', task.id);
 		setEditingTask(task);
 	};
 
-	const handleUpdateTask = (updatedTask) => {
-		onTaskUpdate(project.id, updatedTask.id, updatedTask);
-		setEditingTask(null);
+	const handleUpdateTask = async (updatedTask) => {
+		try {
+			await onTaskUpdate(project.id, updatedTask.id, updatedTask);
+			setEditingTask(null);
+		} catch (error) {
+			console.error('Error updating task:', error);
+			throw error;
+		}
 	};
 
 	return (
@@ -67,6 +81,10 @@ const KanbanBoard = ({ project, onTaskUpdate, onTaskDelete, onTaskMove, onTaskAd
 				}}>
 					<span>Задач: {project.tasks?.length || 0}</span>
 					<span>Создан: {formatDate(project.createdAt)}</span>
+					<span>Статус: {
+						project.status === 'active' ? 'Активный' :
+							project.status === 'completed' ? 'Завершен' : 'В архиве'
+					}</span>
 				</div>
 			</div>
 
@@ -101,21 +119,21 @@ const KanbanBoard = ({ project, onTaskUpdate, onTaskDelete, onTaskMove, onTaskAd
 	);
 };
 
-// Компонент модального окна редактирования (обновленный)
+// components/KanbanBoard/KanbanBoard.jsx (часть с EditTaskModal)
 const EditTaskModal = ({ task, onSave, onCancel }) => {
 	const [formData, setFormData] = useState({
 		...task,
-		// Преобразуем строку даты обратно в формат для input type="date"
+		// Преобразуем дату в формат для input type="date"
 		dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''
 	});
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		// Преобразуем дату обратно в ISO строку для сохранения
+		// Преобразуем дату обратно в строку для API
 		const taskToSave = {
 			...formData,
-			dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
+			dueDate: formData.dueDate || null
 		};
 
 		onSave(taskToSave);
@@ -280,5 +298,4 @@ const EditTaskModal = ({ task, onSave, onCancel }) => {
 		</div>
 	);
 };
-
 export default KanbanBoard;

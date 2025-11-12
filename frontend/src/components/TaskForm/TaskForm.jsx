@@ -14,7 +14,12 @@ const TaskForm = ({ onSubmit, onCancel, initialStatus }) => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		if (formData.content.trim()) {
-			onSubmit(formData);
+			// Форматируем дату для API
+			const submitData = {
+				...formData,
+				dueDate: formData.dueDate || null
+			};
+			onSubmit(submitData);
 			setFormData({
 				content: '',
 				description: '',
