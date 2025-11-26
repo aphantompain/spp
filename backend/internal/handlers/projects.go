@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ProjectHandler struct {
-	storage *storage.Storage
+	storage *storage.MongoDBStorage
 }
 
-func NewProjectHandler(storage *storage.Storage) *ProjectHandler {
+func NewProjectHandler(storage *storage.MongoDBStorage) *ProjectHandler {
 	return &ProjectHandler{storage: storage}
 }
 
@@ -53,7 +53,7 @@ func (h *ProjectHandler) CreateProject(c *gin.Context) {
 	}
 
 	project := &models.Project{
-		ID:          uuid.New().String(),
+		ID:          primitive.NewObjectID(),
 		Title:       req.Title,
 		Description: req.Description,
 		Status:      req.Status,
