@@ -1,4 +1,3 @@
-// internal/models/project.go
 package models
 
 import (
@@ -13,6 +12,8 @@ type Project struct {
 	Description string             `json:"description" bson:"description"`
 	Status      string             `json:"status" bson:"status"`
 	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
+	UpdatedAt   time.Time          `json:"updatedAt" bson:"updatedAt"`
+	OwnerID     primitive.ObjectID `json:"ownerId" bson:"ownerId"` // Владелец проекта
 	Tasks       []Task             `json:"tasks,omitempty" bson:"tasks,omitempty"`
 }
 

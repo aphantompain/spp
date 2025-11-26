@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"taskmanager-backend/internal/middleware"
 	"taskmanager-backend/internal/models"
 	"taskmanager-backend/internal/storage"
 	"time"
@@ -11,16 +13,17 @@ import (
 )
 
 type TaskHandler struct {
-	storage *storage.MongoDBStorage
+	taskStorage    *storage.TaskStorage
+	projectStorage *storage.ProjectStorage
 }
 
 func NewTaskHandler(storage *storage.MongoDBStorage) *TaskHandler {
-	return &TaskHandler{storage: storage}
+	return &TaskHandler{taskStorage: storage.TaskStorage, projectStorage: storage.ProjectStorage}
 }
 
-func parseDate(dateStr string) (*time.Time, error) {
+func parseDate(dateStr string) (time.Time, error) {
 	if dateStr == "" {
-		return nil, nil
+		return time.Time{}, nil
 	}
 
 	formats := []string{
@@ -31,17 +34,17 @@ func parseDate(dateStr string) (*time.Time, error) {
 
 	for _, format := range formats {
 		if t, err := time.Parse(format, dateStr); err == nil {
-			return &t, nil
+			return t, nil
 		}
 	}
 
-	return nil, nil
+	return time.Time{}, fmt.Errorf("invalid date format: %s", dateStr)
 }
 
 func (h *TaskHandler) GetTasksByProject(c *gin.Context) {
 	projectID := c.Param("projectId")
 
-	tasks, err := h.storage.GetTasksByProjectID(projectID)
+	tasks, err := h.taskStorage.GetTasksByProjectID(projectID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -53,7 +56,7 @@ func (h *TaskHandler) GetTasksByProject(c *gin.Context) {
 func (h *TaskHandler) GetTask(c *gin.Context) {
 	id := c.Param("id")
 
-	task, err := h.storage.GetTaskByID(id)
+	task, err := h.taskStorage.GetTaskByID(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -67,24 +70,26 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
-// internal/handlers/tasks.go (обновленные методы)
-// CreateTask создает новую задачу
 func (h *TaskHandler) CreateTask(c *gin.Context) {
+	userID, _, _, ok := middleware.GetUserFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
 	var req models.CreateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Конвертируем projectID в ObjectID
 	projectID, err := primitive.ObjectIDFromHex(req.ProjectID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
 
-	// Проверяем существование проекта
-	project, err := h.storage.GetProjectByID(req.ProjectID)
+	project, err := h.projectStorage.GetProjectByID(req.ProjectID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -95,15 +100,21 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	// Парсим дату
+	if project.OwnerID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
 	var dueDate *time.Time
 	if req.DueDate != "" {
 		parsedDate, err := parseDate(req.DueDate)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		dueDate = parsedDate
+		if !parsedDate.IsZero() {
+			dueDate = &parsedDate
+		}
 	}
 
 	task := &models.Task{
@@ -114,6 +125,8 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		Assignee:    req.Assignee,
 		DueDate:     dueDate,
 		ProjectID:   projectID,
+		CreatedBy:   userID,
+		CreatedAt:   time.Now(),
 	}
 
 	if task.Status == "" {
@@ -123,7 +136,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		task.Priority = "medium"
 	}
 
-	if err := h.storage.CreateTask(task); err != nil {
+	if err := h.taskStorage.CreateTask(task); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -132,6 +145,12 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 }
 
 func (h *TaskHandler) UpdateTask(c *gin.Context) {
+	userID, _, _, ok := middleware.GetUserFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
 	id := c.Param("id")
 
 	var req models.UpdateTaskRequest
@@ -140,7 +159,7 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 		return
 	}
 
-	existingTask, err := h.storage.GetTaskByID(id)
+	existingTask, err := h.taskStorage.GetTaskByID(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -148,6 +167,17 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 
 	if existingTask == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+		return
+	}
+
+	project, err := h.projectStorage.GetProjectByID(existingTask.ProjectID.Hex())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if project == nil || project.OwnerID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
 	}
 
@@ -170,15 +200,17 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	if req.DueDate != "" {
 		parsedDate, err := parseDate(req.DueDate)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		existingTask.DueDate = parsedDate
+		if !parsedDate.IsZero() {
+			existingTask.DueDate = &parsedDate
+		}
 	} else if req.DueDate == "" {
 		existingTask.DueDate = nil
 	}
 
-	if err := h.storage.UpdateTask(existingTask); err != nil {
+	if err := h.taskStorage.UpdateTask(existingTask); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -189,7 +221,7 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 func (h *TaskHandler) DeleteTask(c *gin.Context) {
 	id := c.Param("id")
 
-	existingTask, err := h.storage.GetTaskByID(id)
+	existingTask, err := h.taskStorage.GetTaskByID(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -200,7 +232,7 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	if err := h.storage.DeleteTask(id); err != nil {
+	if err := h.taskStorage.DeleteTask(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

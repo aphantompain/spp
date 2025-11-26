@@ -15,6 +15,7 @@ const ProjectPage = () => {
 	const [project, setProject] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [exporting, setExporting] = useState(false);
 
 	// Загружаем проект при монтировании или изменении projectId
 	useEffect(() => {
@@ -109,6 +110,20 @@ const ProjectPage = () => {
 		}
 	};
 
+	const handleExport = async (format) => {
+		if (!project || !project.id) return;
+
+		setExporting(true);
+		try {
+			await apiService.exportProject(project.id, format);
+		} catch (error) {
+			console.error('Error exporting project:', error);
+			alert('Ошибка при экспорте проекта: ' + error.message);
+		} finally {
+			setExporting(false);
+		}
+	};
+
 	if (loading) {
 		return (
 			<div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -166,32 +181,102 @@ const ProjectPage = () => {
 
 	return (
 		<div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-			{/* Кнопка назад */}
-			<button
-				onClick={() => navigate('/projects')}
-				style={{
-					marginBottom: '1.5rem',
-					padding: '0.5rem 1rem',
-					backgroundColor: '#6c757d',
-					color: 'white',
-					border: 'none',
-					borderRadius: '4px',
-					cursor: 'pointer',
-					fontSize: '0.9rem',
-					display: 'flex',
-					alignItems: 'center',
-					gap: '0.5rem',
-					transition: 'all 0.2s ease'
-				}}
-				onMouseEnter={(e) => {
-					e.currentTarget.style.backgroundColor = '#5a6268';
-				}}
-				onMouseLeave={(e) => {
-					e.currentTarget.style.backgroundColor = '#6c757d';
-				}}
-			>
-				← Назад к проектам
-			</button>
+			{/* Панель управления */}
+			<div style={{
+				display: 'flex',
+				justifyContent: 'space-between',
+				alignItems: 'center',
+				marginBottom: '1.5rem',
+				gap: '1rem',
+				flexWrap: 'wrap'
+			}}>
+				<button
+					onClick={() => navigate('/projects')}
+					style={{
+						padding: '0.5rem 1rem',
+						backgroundColor: '#6c757d',
+						color: 'white',
+						border: 'none',
+						borderRadius: '4px',
+						cursor: 'pointer',
+						fontSize: '0.9rem',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.5rem',
+						transition: 'all 0.2s ease'
+					}}
+					onMouseEnter={(e) => {
+						e.currentTarget.style.backgroundColor = '#5a6268';
+					}}
+					onMouseLeave={(e) => {
+						e.currentTarget.style.backgroundColor = '#6c757d';
+					}}
+				>
+					← Назад к проектам
+				</button>
+
+				{/* Кнопки экспорта */}
+				<div style={{ display: 'flex', gap: '0.5rem' }}>
+					<button
+						onClick={() => handleExport('excel')}
+						disabled={exporting}
+						style={{
+							padding: '0.5rem 1rem',
+							backgroundColor: exporting ? '#ccc' : '#28a745',
+							color: 'white',
+							border: 'none',
+							borderRadius: '4px',
+							cursor: exporting ? 'not-allowed' : 'pointer',
+							fontSize: '0.9rem',
+							display: 'flex',
+							alignItems: 'center',
+							gap: '0.5rem',
+							transition: 'all 0.2s ease'
+						}}
+						onMouseEnter={(e) => {
+							if (!exporting) {
+								e.currentTarget.style.backgroundColor = '#218838';
+							}
+						}}
+						onMouseLeave={(e) => {
+							if (!exporting) {
+								e.currentTarget.style.backgroundColor = '#28a745';
+							}
+						}}
+					>
+						📊 {exporting ? 'Экспорт...' : 'Экспорт в Excel'}
+					</button>
+					<button
+						onClick={() => handleExport('word')}
+						disabled={exporting}
+						style={{
+							padding: '0.5rem 1rem',
+							backgroundColor: exporting ? '#ccc' : '#007bff',
+							color: 'white',
+							border: 'none',
+							borderRadius: '4px',
+							cursor: exporting ? 'not-allowed' : 'pointer',
+							fontSize: '0.9rem',
+							display: 'flex',
+							alignItems: 'center',
+							gap: '0.5rem',
+							transition: 'all 0.2s ease'
+						}}
+						onMouseEnter={(e) => {
+							if (!exporting) {
+								e.currentTarget.style.backgroundColor = '#0056b3';
+							}
+						}}
+						onMouseLeave={(e) => {
+							if (!exporting) {
+								e.currentTarget.style.backgroundColor = '#007bff';
+							}
+						}}
+					>
+						📄 {exporting ? 'Экспорт...' : 'Экспорт в Word'}
+					</button>
+				</div>
+			</div>
 
 			{/* Kanban доска */}
 			<KanbanBoard

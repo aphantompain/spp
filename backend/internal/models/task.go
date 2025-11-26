@@ -1,4 +1,3 @@
-// internal/models/task.go
 package models
 
 import (
@@ -17,6 +16,7 @@ type Task struct {
 	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
 	DueDate     *time.Time         `json:"dueDate,omitempty" bson:"dueDate,omitempty"`
 	ProjectID   primitive.ObjectID `json:"projectId" bson:"projectId"`
+	CreatedBy   primitive.ObjectID `json:"createdBy" bson:"createdBy"`
 }
 
 type CreateTaskRequest struct {

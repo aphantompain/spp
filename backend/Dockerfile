@@ -1,19 +1,24 @@
-FROM golang:1.21-alpine
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# Копируем файлы зависимостей
+RUN apk add --no-cache git
+
 COPY go.mod go.sum ./
+
 RUN go mod download
 
-# Копируем весь исходный код
 COPY . .
 
-# Собираем приложение
-RUN go build -o main ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
 
-# Экспортируем порт
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates tzdata
+WORKDIR /root/
+
+COPY --from=builder /app/main .
+
 EXPOSE 8080
 
-# Запускаем приложение
 CMD ["./main"]
