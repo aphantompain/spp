@@ -13,35 +13,40 @@ services:
     restart: unless-stopped
     networks:
       - taskmanager-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   backend:
     build: 
       context: ./backend
-      dockerfile: Dockerfile
     container_name: taskmanager-backend
     ports:
       - "8080:8080"
     environment:
-      - GIN_MODE=release
       - MONGODB_URI=mongodb://mongodb:27017
       - DB_NAME=taskmanager
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - taskmanager-network
 
   frontend:
     build:
-      context: ./frontend  # изменили контекст на папку frontend
-      dockerfile: Dockerfile  # используем стандартное имя
+      context: ./frontend
     container_name: taskmanager-frontend
     ports:
-      - "3000:3000"
+      - "3000:4173"
+    environment:
+      - VITE_API_URL=http://localhost:8080/api/v1
     depends_on:
       - backend
-    environment:
-      - REACT_APP_API_URL=http://localhost:8080/api/v1
     restart: unless-stopped
     networks:
       - taskmanager-network
