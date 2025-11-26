@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TaskHandler struct {
-	storage *storage.Storage
+	storage *storage.MongoDBStorage
 }
 
-func NewTaskHandler(storage *storage.Storage) *TaskHandler {
+func NewTaskHandler(storage *storage.MongoDBStorage) *TaskHandler {
 	return &TaskHandler{storage: storage}
 }
 
@@ -67,6 +67,8 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
+// internal/handlers/tasks.go (обновленные методы)
+// CreateTask создает новую задачу
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	var req models.CreateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -74,6 +76,14 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
+	// Конвертируем projectID в ObjectID
+	projectID, err := primitive.ObjectIDFromHex(req.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
+	// Проверяем существование проекта
 	project, err := h.storage.GetProjectByID(req.ProjectID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -85,6 +95,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
+	// Парсим дату
 	var dueDate *time.Time
 	if req.DueDate != "" {
 		parsedDate, err := parseDate(req.DueDate)
@@ -96,15 +107,13 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	}
 
 	task := &models.Task{
-		ID:          uuid.New().String(),
 		Content:     req.Content,
 		Description: req.Description,
 		Status:      req.Status,
 		Priority:    req.Priority,
 		Assignee:    req.Assignee,
-		CreatedAt:   time.Now(),
 		DueDate:     dueDate,
-		ProjectID:   req.ProjectID,
+		ProjectID:   projectID,
 	}
 
 	if task.Status == "" {
