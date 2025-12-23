@@ -1,14 +1,15 @@
 .tabs-container {
   position: relative;
-  background-color: #181818;
-  border-bottom: 1px solid #282828;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
 }
 
 .tabs-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
+  padding: 12px 16px 0 16px;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -38,56 +39,115 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background-color: #282828;
-  color: #b3b3b3;
-  border-radius: 4px 4px 0 0;
+  padding: 10px 18px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 12px 12px 0 0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   min-width: 120px;
   max-width: 200px;
   position: relative;
+  border: 1px solid transparent;
+  border-bottom: none;
+  margin-right: 4px;
+}
+
+.tab-item::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: var(--primary-blue);
+  border-radius: 3px 3px 0 0;
+  transition: width 0.3s ease;
 }
 
 .tab-item:hover {
-  background-color: #333333;
-  color: #ffffff;
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-item:hover::before {
+  width: 60%;
 }
 
 .tab-item.active {
-  background-color: #1e1e1e;
-  color: #ffffff;
-  border-bottom: 2px solid #1db954;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  color: var(--text-primary);
+  border-color: var(--primary-blue);
+  font-weight: 600;
+  box-shadow: 0 -2px 8px rgba(66, 133, 244, 0.2);
+}
+
+.tab-item.active::before {
+  width: 80%;
+  background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+}
+
+.tab-item.pinned {
+  border-left: 3px solid var(--primary-blue);
+  padding-left: 15px;
 }
 
 .tab-title {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 16px;
+}
+
+.tab-pin {
   font-size: 14px;
+}
+
+.tab-pin-button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-pin-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--primary-blue);
+  transform: scale(1.1) rotate(15deg);
 }
 
 .tab-close {
   background: none;
   border: none;
-  color: #b3b3b3;
-  font-size: 20px;
+  color: var(--text-secondary);
+  font-size: 18px;
   line-height: 1;
   cursor: pointer;
-  padding: 0;
-  width: 20px;
-  height: 20px;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
-  transition: all 0.2s ease;
+  border-radius: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tab-close:hover {
-  background-color: #404040;
-  color: #ffffff;
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  transform: scale(1.1) rotate(90deg);
 }
 
 .tabs-actions {
@@ -97,77 +157,124 @@
 }
 
 .tabs-action-button {
-  background-color: #282828;
-  border: none;
-  color: #b3b3b3;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
   font-size: 18px;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tabs-action-button:hover {
-  background-color: #333333;
-  color: #ffffff;
+  background-color: var(--bg-hover);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+}
+
+.tabs-overview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabs-overview-overlay.show {
+  opacity: 1;
+  pointer-events: all;
 }
 
 .tabs-overview {
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
+  top: 0;
   right: 0;
-  background-color: #181818;
-  border: 1px solid #282828;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  max-height: 400px;
+  width: 380px;
+  height: 100vh;
+  background-color: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
   overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  box-shadow: var(--shadow-lg);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabs-overview.show {
+  transform: translateX(0);
+}
+
+.tabs-overview::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tabs-overview::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.tabs-overview::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  border: 2px solid var(--bg-secondary);
+}
+
+.tabs-overview::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
 }
 
 .tabs-overview-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #282828;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
 }
 
 .tabs-overview-header h3 {
   margin: 0;
-  font-size: 16px;
-  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
 }
 
 .tabs-overview-header button {
   background: none;
   border: none;
-  color: #b3b3b3;
+  color: var(--text-secondary);
   font-size: 24px;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tabs-overview-header button:hover {
-  background-color: #282828;
-  color: #ffffff;
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  transform: scale(1.1);
 }
 
 .tabs-overview-list {
-  padding: 8px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -177,21 +284,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  background-color: #282828;
-  border-radius: 4px;
+  padding: 16px;
+  background-color: var(--bg-tertiary);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border-color);
 }
 
 .tabs-overview-item:hover {
-  background-color: #333333;
+  background-color: var(--bg-hover);
+  border-color: var(--primary-blue);
+  transform: translateX(4px);
 }
 
 .tabs-overview-item.active {
-  border-color: #1db954;
-  background-color: #1a1a1a;
+  border-color: var(--primary-blue);
+  background: linear-gradient(90deg, var(--primary-blue-light) 0%, var(--bg-tertiary) 100%);
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
 }
 
 .tabs-overview-content {
@@ -199,15 +309,44 @@
 }
 
 .tabs-overview-content h4 {
-  margin: 0 0 4px 0;
-  font-size: 14px;
-  color: #ffffff;
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tabs-overview-content p {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabs-overview-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tabs-overview-pin {
+  background: none;
+  border: none;
   color: #b3b3b3;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.tabs-overview-pin:hover {
+  background-color: #404040;
+  color: #ffffff;
 }
 
 .tabs-overview-close {

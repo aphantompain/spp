@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { podcastAPI } from '../../services/api'
+import { api } from '../../services/api'
 import PodcastCard from '../PodcastCard/PodcastCard'
 import './Search.css'
 
@@ -17,7 +17,7 @@ function Search({ podcasts, onPodcastSelect }) {
 
     setIsSearching(true)
     try {
-      const results = await podcastAPI.searchPodcasts(searchQuery)
+      const results = await api.searchPodcasts(searchQuery)
       setSearchResults(results)
     } catch (error) {
       console.error('Ошибка поиска:', error)
@@ -50,7 +50,7 @@ function Search({ podcasts, onPodcastSelect }) {
             onChange={handleInputChange}
           />
           <button type="submit" className="search-button" disabled={isSearching}>
-            {isSearching ? 'Поиск...' : '🔍'}
+            🔍
           </button>
         </form>
       </div>
@@ -73,11 +73,6 @@ function Search({ podcasts, onPodcastSelect }) {
               ))}
             </div>
           </>
-        )}
-        {!searchQuery && (
-          <div className="search-placeholder">
-            <p>Введите запрос для поиска подкастов</p>
-          </div>
         )}
       </div>
     </div>

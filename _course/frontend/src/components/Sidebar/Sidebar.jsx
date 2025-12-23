@@ -26,6 +26,13 @@ function Sidebar({ onCreatePodcast, onNavigate, activeTabType }) {
           <span>Поиск</span>
         </button>
         <button
+          className={`sidebar-item sidebar-button ${activeTabType === 'mypodcasts' ? 'active' : ''}`}
+          onClick={(e) => handleNavClick(e, 'mypodcasts')}
+        >
+          <span className="sidebar-icon">🎙️</span>
+          <span>Мои подкасты</span>
+        </button>
+        <button
           className={`sidebar-item sidebar-button ${activeTabType === 'library' ? 'active' : ''}`}
           onClick={(e) => handleNavClick(e, 'library')}
         >

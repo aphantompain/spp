@@ -5,11 +5,18 @@
 }
 
 .create-podcast-card {
-  background-color: #181818;
-  border: 1px solid #282828;
-  border-radius: 8px;
-  padding: 32px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.create-podcast-card:hover {
+  border-color: var(--primary-blue);
+  box-shadow: 0 12px 48px rgba(66, 133, 244, 0.2);
 }
 
 .create-podcast-header {
@@ -20,10 +27,11 @@
 }
 
 .create-podcast-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0;
+  letter-spacing: -0.5px;
 }
 
 .create-podcast-close {
@@ -60,30 +68,31 @@
 }
 
 .create-podcast-field label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  color: #b3b3b3;
+  color: var(--text-secondary);
 }
 
 .create-podcast-field input,
 .create-podcast-field select,
 .create-podcast-field textarea {
-  background-color: #282828;
-  border: 1px solid #404040;
-  border-radius: 4px;
-  padding: 12px 16px;
-  color: #ffffff;
-  font-size: 14px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--text-primary);
+  font-size: 16px;
   font-family: inherit;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .create-podcast-field input:focus,
 .create-podcast-field select:focus,
 .create-podcast-field textarea:focus {
   outline: none;
-  border-color: #1db954;
-  background-color: #333333;
+  border-color: var(--primary-blue);
+  background-color: var(--bg-hover);
+  box-shadow: 0 0 0 3px var(--primary-blue-light);
 }
 
 .create-podcast-field input::placeholder,
@@ -94,6 +103,25 @@
 .create-podcast-field textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+.create-podcast-cover-preview {
+  margin-top: 12px;
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #404040;
+  background-color: #181818;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.create-podcast-cover-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .create-podcast-error {
@@ -113,33 +141,37 @@
 }
 
 .create-podcast-button {
-  padding: 12px 24px;
+  padding: 14px 28px;
   border: none;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 12px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .create-podcast-button.submit {
-  background-color: #1db954;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
   color: #ffffff;
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
 }
 
 .create-podcast-button.submit:hover:not(:disabled) {
-  background-color: #1ed760;
-  transform: scale(1.02);
+  background: linear-gradient(135deg, var(--primary-blue-hover) 0%, var(--primary-blue) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 133, 244, 0.5);
 }
 
 .create-podcast-button.cancel {
-  background-color: #282828;
-  color: #b3b3b3;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
 
 .create-podcast-button.cancel:hover {
-  background-color: #333333;
-  color: #ffffff;
+  background-color: var(--bg-hover);
+  border-color: var(--primary-blue);
+  color: var(--text-primary);
 }
 
 .create-podcast-button:disabled {

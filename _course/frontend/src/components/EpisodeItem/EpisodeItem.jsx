@@ -1,6 +1,6 @@
 import './EpisodeItem.css'
 
-function EpisodeItem({ episode, index, onClick }) {
+function EpisodeItem({ episode, index, onClick, onLike, isLiked, isAuthor, onEdit, onDelete }) {
   const formatDate = (dateString) => {
     if (!dateString) return ''
     const date = new Date(dateString)
@@ -36,6 +36,39 @@ function EpisodeItem({ episode, index, onClick }) {
       <span className="episode-item-duration">
         {formatDuration(episode.duration)}
       </span>
+      <div className="episode-item-actions">
+        <button
+          className={`episode-like ${isLiked ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            onLike?.(episode)
+          }}
+        >
+          ❤️ {episode.likes ?? 0}
+        </button>
+        {isAuthor && (
+          <>
+            <button
+              className="episode-edit"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit?.(episode)
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="episode-delete"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete?.(episode)
+              }}
+            >
+              🗑
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

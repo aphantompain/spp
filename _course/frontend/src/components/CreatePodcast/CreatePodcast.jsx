@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { podcastAPI } from '../../services/api'
+import { api } from '../../services/api'
 import './CreatePodcast.css'
 
 function CreatePodcast({ onPodcastCreated, onCancel }) {
@@ -8,6 +8,7 @@ function CreatePodcast({ onPodcastCreated, onCancel }) {
     author: '',
     description: '',
     category: 'Технологии',
+    image: '',
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -39,28 +40,11 @@ function CreatePodcast({ onPodcastCreated, onCancel }) {
     try {
       const podcastData = {
         ...formData,
-        image: null,
         episodes: [],
       }
 
-      // В реальном приложении здесь был бы API вызов
-      // const newPodcast = await podcastAPI.createPodcast(podcastData)
-      
-      // Для демо создаем локально
-      const newPodcast = {
-        id: Date.now(),
-        ...podcastData,
-        createdAt: new Date().toISOString(),
-      }
-
-      // Сохраняем в localStorage для демо
-      const podcasts = JSON.parse(localStorage.getItem('podcasts') || '[]')
-      podcasts.push(newPodcast)
-      localStorage.setItem('podcasts', JSON.stringify(podcasts))
-
-      if (onPodcastCreated) {
-        onPodcastCreated(newPodcast)
-      }
+      const newPodcast = await api.createPodcast(podcastData)
+      if (onPodcastCreated) onPodcastCreated(newPodcast)
     } catch (err) {
       setError('Ошибка при создании подкаста: ' + err.message)
     } finally {
@@ -118,6 +102,22 @@ function CreatePodcast({ onPodcastCreated, onCancel }) {
                 </option>
               ))}
             </select>
+          </div>
+          <div className="create-podcast-field">
+            <label htmlFor="image">Обложка (URL)</label>
+            <input
+              id="image"
+              name="image"
+              type="url"
+              value={formData.image}
+              onChange={handleChange}
+              placeholder="https://example.com/cover.jpg"
+            />
+            {formData.image && (
+              <div className="create-podcast-cover-preview">
+                <img src={formData.image} alt="Обложка" />
+              </div>
+            )}
           </div>
           <div className="create-podcast-field">
             <label htmlFor="description">Описание</label>

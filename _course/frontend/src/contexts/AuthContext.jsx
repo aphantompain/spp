@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { api } from '../services/api'
 
 const AuthContext = createContext(null)
 
@@ -13,68 +14,68 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [token, setToken] = useState(null)
 
   useEffect(() => {
-    // Инициализируем тестового пользователя, если пользователей еще нет
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    if (users.length === 0) {
-      const testUser = {
-        name: 'Тестовый пользователь',
-        email: 'test@test.com',
-        password: 'test123'
-      }
-      localStorage.setItem('users', JSON.stringify([testUser]))
-    }
-
-    // Проверяем, есть ли сохраненный пользователь в localStorage
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    const saved = localStorage.getItem('auth')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      setUser(parsed.user)
+      setToken(parsed.token)
+      api.setToken(parsed.token)
     }
     setIsLoading(false)
   }, [])
 
   const login = async (email, password) => {
-    // В реальном приложении здесь был бы API вызов
-    // Для демо используем простую проверку
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    const foundUser = users.find(u => u.email === email && u.password === password)
-    
-    if (foundUser) {
-      const userData = { email: foundUser.email, name: foundUser.name }
-      setUser(userData)
-      localStorage.setItem('user', JSON.stringify(userData))
+    try {
+      const res = await api.login(email, password)
+      if (!res?.token) {
+        return { success: false, error: res?.error || 'Ошибка входа' }
+      }
+      setUser(res.user)
+      setToken(res.token)
+      api.setToken(res.token)
+      localStorage.setItem('auth', JSON.stringify({ user: res.user, token: res.token }))
       return { success: true }
+    } catch (e) {
+      const msg = e?.message || 'Ошибка входа'
+      if (msg.toLowerCase().includes('invalid credentials')) {
+        return { success: false, error: 'Неверный email или пароль' }
+      }
+      return { success: false, error: msg }
     }
-    return { success: false, error: 'Неверный email или пароль' }
   }
 
   const register = async (name, email, password) => {
-    // В реальном приложении здесь был бы API вызов
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    
-    // Проверяем, не существует ли уже пользователь с таким email
-    if (users.find(u => u.email === email)) {
-      return { success: false, error: 'Пользователь с таким email уже существует' }
+    try {
+      const res = await api.register(name, email, password)
+      if (!res?.token) {
+        return { success: false, error: res?.error || 'Ошибка регистрации' }
+      }
+      setUser(res.user)
+      setToken(res.token)
+      api.setToken(res.token)
+      localStorage.setItem('auth', JSON.stringify({ user: res.user, token: res.token }))
+      return { success: true }
+    } catch (e) {
+      const msg = e?.message || 'Ошибка регистрации'
+      if (msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('exists')) {
+        return { success: false, error: 'Пользователь с таким email уже существует' }
+      }
+      return { success: false, error: msg }
     }
-
-    const newUser = { name, email, password }
-    users.push(newUser)
-    localStorage.setItem('users', JSON.stringify(users))
-
-    const userData = { email, name }
-    setUser(userData)
-    localStorage.setItem('user', JSON.stringify(userData))
-    return { success: true }
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('user')
+    setToken(null)
+    api.setToken(null)
+    localStorage.removeItem('auth')
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   )

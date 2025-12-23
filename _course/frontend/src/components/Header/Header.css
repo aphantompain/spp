@@ -1,11 +1,14 @@
 .header {
   height: 64px;
-  background-color: #181818;
-  border-bottom: 1px solid #282828;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 32px;
   z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
 }
 
 .header-content {
@@ -18,40 +21,81 @@
 .header-left {
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
 .header-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .header-right {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
 }
 
 .header-user {
-  color: #b3b3b3;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px 20px;
+  background: var(--bg-tertiary);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.header-user:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-color: var(--primary-blue);
 }
 
 .header-button {
   background: transparent;
-  border: none;
-  color: #b3b3b3;
-  font-size: 14px;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  padding: 10px 24px;
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--primary-blue-light);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
 }
 
 .header-button:hover {
-  color: #ffffff;
-  background-color: #282828;
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+  border-color: var(--primary-blue);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+}
+
+.header-button:hover::before {
+  width: 300px;
+  height: 300px;
 }
 

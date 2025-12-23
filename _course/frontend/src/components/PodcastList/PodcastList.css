@@ -1,16 +1,18 @@
 .podcast-list {
   width: 100%;
+  padding: 32px;
 }
 
 .podcast-list-header {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .podcast-list-title {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0;
+  letter-spacing: -0.5px;
 }
 
 .podcast-grid {

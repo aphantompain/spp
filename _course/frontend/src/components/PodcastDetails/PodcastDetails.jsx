@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import EpisodeList from '../EpisodeList/EpisodeList'
 import './PodcastDetails.css'
 
@@ -11,12 +12,27 @@ function PodcastDetails({
   isInLibrary,
   onToggleLibrary,
   onAddEpisode,
+  onUpdatePodcast,
+  likedEpisodeIds = [],
+  onLikeEpisode,
+  onUpdateEpisode,
+  onDeleteEpisode,
 }) {
+  const { user } = useAuth()
   const [newEpisode, setNewEpisode] = useState({
     title: '',
     description: '',
     date: '',
-    durationMinutes: '',
+    audioUrl: '',
+  })
+
+  const [editMode, setEditMode] = useState(false)
+  const [editData, setEditData] = useState({
+    title: podcast.title || '',
+    author: podcast.author || '',
+    description: podcast.description || '',
+    category: podcast.category || 'Технологии',
+    image: podcast.image || '',
   })
 
   const handleEpisodeFieldChange = (e) => {
@@ -27,26 +43,58 @@ function PodcastDetails({
     }))
   }
 
+  const isAuthor = user && podcast.authorId === user.id
+
+  const handleEditFieldChange = (e) => {
+    const { name, value } = e.target
+    setEditData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault()
+    if (!onUpdatePodcast) return
+    const payload = {
+      title: editData.title || podcast.title,
+      author: editData.author || podcast.author,
+      description: editData.description,
+      category: editData.category,
+      image: editData.image || null,
+      episodes: podcast.episodes || [],
+      authorId: podcast.authorId,
+      authorEmail: podcast.authorEmail,
+    }
+    onUpdatePodcast(podcast.id, payload)
+    setEditMode(false)
+  }
+
   const handleAddEpisodeClick = (e) => {
     e.preventDefault()
-    if (!onAddEpisode || !newEpisode.title) return
+    if (!onAddEpisode || !newEpisode.title || !newEpisode.audioUrl) return
 
-    const durationMinutes = Number(newEpisode.durationMinutes || 0)
-    const duration = durationMinutes * 60
-
-    onAddEpisode(podcast.id, {
-      title: newEpisode.title,
-      description: newEpisode.description,
-      date: newEpisode.date || new Date().toISOString().slice(0, 10),
-      duration,
-    })
-
-    setNewEpisode({
-      title: '',
-      description: '',
-      date: '',
-      durationMinutes: '',
-    })
+    const audio = new Audio()
+    audio.src = newEpisode.audioUrl
+    audio.onloadedmetadata = () => {
+      const duration = Math.round(audio.duration || 0)
+      onAddEpisode(podcast.id, {
+        title: newEpisode.title,
+        description: newEpisode.description,
+        date: newEpisode.date || new Date().toISOString().slice(0, 10),
+        duration,
+        audioUrl: newEpisode.audioUrl,
+      })
+      setNewEpisode({
+        title: '',
+        description: '',
+        date: '',
+        audioUrl: '',
+      })
+    }
+    audio.onerror = () => {
+      alert('Не удалось загрузить аудио. Проверьте ссылку.')
+    }
   }
 
   return (
@@ -61,49 +109,152 @@ function PodcastDetails({
             alt={podcast.title}
             className="podcast-details-image"
             onError={(e) => {
-              e.target.src =
-                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300"%3E%3Crect fill="%23333" width="300" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="30" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EПодкаст%3C/text%3E%3C/svg%3E'
+              // если внешний URL не загрузился, подставляем локальный плейсхолдер один раз
+              if (e.target.src.endsWith('/placeholder-podcast.png')) return
+              e.target.onerror = null
+              e.target.src = '/placeholder-podcast.png'
             }}
           />
         </div>
         <div className="podcast-details-info">
           <span className="podcast-details-type">Подкаст</span>
-          <h1 className="podcast-details-title">{podcast.title}</h1>
-          <p className="podcast-details-author">{podcast.author}</p>
-          <p className="podcast-details-description">{podcast.description}</p>
-          <div className="podcast-details-stats">
-            <span>{podcast.episodes?.length || 0} эпизодов</span>
-            {podcast.category && <span>• {podcast.category}</span>}
-          </div>
-          <div className="podcast-details-actions">
-            {onToggleFavorite && (
-              <button
-                className={`podcast-details-action-button ${
-                  isFavorite ? 'active' : ''
-                }`}
-                onClick={() => onToggleFavorite(podcast)}
-              >
-                {isFavorite ? 'Убрать из избранного' : 'В избранное ⭐'}
-              </button>
-            )}
-            {onToggleLibrary && (
-              <button
-                className={`podcast-details-action-button ${
-                  isInLibrary ? 'active' : ''
-                }`}
-                onClick={() => onToggleLibrary(podcast)}
-              >
-                {isInLibrary ? 'Убрать из библиотеки' : 'В библиотеку 📚'}
-              </button>
-            )}
-          </div>
+          {editMode ? (
+            <form className="podcast-details-edit-form" onSubmit={handleSaveEdit}>
+              <div className="podcast-details-edit-grid">
+                <div className="podcast-details-edit-field">
+                  <label htmlFor="edit-title">Название</label>
+                  <input
+                    id="edit-title"
+                    name="title"
+                    type="text"
+                    value={editData.title}
+                    onChange={handleEditFieldChange}
+                    required
+                  />
+                </div>
+                <div className="podcast-details-edit-field">
+                  <label htmlFor="edit-author">Автор</label>
+                  <input
+                    id="edit-author"
+                    name="author"
+                    type="text"
+                    value={editData.author}
+                    onChange={handleEditFieldChange}
+                    required
+                  />
+                </div>
+                <div className="podcast-details-edit-field">
+                  <label htmlFor="edit-category">Категория</label>
+                  <input
+                    id="edit-category"
+                    name="category"
+                    type="text"
+                    value={editData.category}
+                    onChange={handleEditFieldChange}
+                  />
+                </div>
+                <div className="podcast-details-edit-field">
+                  <label htmlFor="edit-image">Ссылка на обложку</label>
+                  <input
+                    id="edit-image"
+                    name="image"
+                    type="url"
+                    value={editData.image}
+                    onChange={handleEditFieldChange}
+                    placeholder="https://example.com/cover.jpg"
+                  />
+                </div>
+              </div>
+              <div className="podcast-details-edit-field">
+                <label htmlFor="edit-description">Описание</label>
+                <textarea
+                  id="edit-description"
+                  name="description"
+                  rows={3}
+                  value={editData.description}
+                  onChange={handleEditFieldChange}
+                  placeholder="Опишите ваш подкаст..."
+                />
+              </div>
+              <div className="podcast-details-edit-actions">
+                <button
+                  type="button"
+                  className="podcast-details-action-button"
+                  onClick={() => {
+                    setEditMode(false)
+                    setEditData({
+                      title: podcast.title || '',
+                      author: podcast.author || '',
+                      description: podcast.description || '',
+                      category: podcast.category || 'Технологии',
+                      image: podcast.image || '',
+                    })
+                  }}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="podcast-details-action-button active"
+                >
+                  Сохранить
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <h1 className="podcast-details-title">{podcast.title}</h1>
+              <p className="podcast-details-author">
+                {podcast.author || 'Автор не указан'}
+              </p>
+              {podcast.authorEmail && (
+                <p className="podcast-details-author-email">{podcast.authorEmail}</p>
+              )}
+              <p className="podcast-details-description">{podcast.description}</p>
+              <div className="podcast-details-stats">
+                <span>{podcast.episodes?.length || 0} эпизодов</span>
+                {podcast.category && <span>• {podcast.category}</span>}
+              </div>
+              <div className="podcast-details-actions">
+                {onToggleFavorite && (
+                  <button
+                    className={`podcast-details-action-button ${
+                      isFavorite ? 'active' : ''
+                    }`}
+                    onClick={() => onToggleFavorite(podcast)}
+                  >
+                    {isFavorite ? 'Убрать из избранного' : 'В избранное ⭐'}
+                  </button>
+                )}
+                {onToggleLibrary && (
+                  <button
+                    className={`podcast-details-action-button ${
+                      isInLibrary ? 'active' : ''
+                    }`}
+                    onClick={() => onToggleLibrary(podcast)}
+                  >
+                    {isInLibrary ? 'Убрать из библиотеки' : 'В библиотеку 📚'}
+                  </button>
+                )}
+                {isAuthor && onUpdatePodcast && (
+                  <button
+                    type="button"
+                    className="podcast-details-action-button"
+                    onClick={() => setEditMode(true)}
+                  >
+                    ✏️ Редактировать
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
       <div className="podcast-details-episodes">
         <div className="podcast-details-episodes-header">
           <h2 className="podcast-details-episodes-title">Эпизоды</h2>
         </div>
-        {onAddEpisode && (
+        {isAuthor && onAddEpisode && (
           <form className="podcast-details-add-episode" onSubmit={handleAddEpisodeClick}>
             <div className="podcast-details-add-episode-fields">
               <div className="podcast-details-add-episode-field">
@@ -129,6 +280,18 @@ function PodcastDetails({
                   placeholder="Кратко опишите содержание эпизода"
                 />
               </div>
+              <div className="podcast-details-add-episode-field">
+                <label htmlFor="episode-audio">Ссылка на аудио *</label>
+                <input
+                  id="episode-audio"
+                  name="audioUrl"
+                  type="url"
+                  value={newEpisode.audioUrl}
+                  onChange={handleEpisodeFieldChange}
+                  required
+                  placeholder="https://example.com/audio.mp3"
+                />
+              </div>
               <div className="podcast-details-add-episode-row">
                 <div className="podcast-details-add-episode-field small">
                   <label htmlFor="episode-date">Дата</label>
@@ -140,23 +303,11 @@ function PodcastDetails({
                     onChange={handleEpisodeFieldChange}
                   />
                 </div>
-                <div className="podcast-details-add-episode-field small">
-                  <label htmlFor="episode-duration">Длительность (мин)</label>
-                  <input
-                    id="episode-duration"
-                    name="durationMinutes"
-                    type="number"
-                    min="0"
-                    value={newEpisode.durationMinutes}
-                    onChange={handleEpisodeFieldChange}
-                    placeholder="30"
-                  />
-                </div>
                 <div className="podcast-details-add-episode-actions">
                   <button
                     type="submit"
                     className="podcast-details-add-episode-button"
-                    disabled={!newEpisode.title}
+                    disabled={!newEpisode.title || !newEpisode.audioUrl}
                   >
                     Добавить эпизод
                   </button>
@@ -167,7 +318,18 @@ function PodcastDetails({
         )}
         <EpisodeList
           episodes={podcast.episodes || []}
-          onEpisodeSelect={onEpisodeSelect}
+          onEpisodeSelect={(ep, playlist) => onEpisodeSelect(ep, podcast.episodes || playlist)}
+          onLike={onLikeEpisode}
+          likedEpisodeIds={likedEpisodeIds}
+          isAuthor={isAuthor}
+          onEditEpisode={(ep) => onUpdateEpisode?.(ep, {
+            title: prompt('Название', ep.title) || ep.title,
+            description: prompt('Описание', ep.description || '') || ep.description,
+            date: ep.date,
+            duration: ep.duration,
+            audioUrl: prompt('Ссылка на аудио', ep.audioUrl || '') || ep.audioUrl,
+          })}
+          onDeleteEpisode={onDeleteEpisode}
         />
       </div>
     </div>
