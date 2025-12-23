@@ -1,4 +1,3 @@
-// internal/graphql/resolvers.go
 package graphql
 
 import (
@@ -9,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// GetProject получает проект по ID
 func (r *GraphQLResolver) GetProject(p graphql.ResolveParams) (interface{}, error) {
 	id, ok := p.Args["id"].(string)
 	if !ok {
@@ -29,12 +27,9 @@ func (r *GraphQLResolver) GetProject(p graphql.ResolveParams) (interface{}, erro
 	return *project, nil
 }
 
-// GetProjects получает все проекты пользователя
 func (r *GraphQLResolver) GetProjects(p graphql.ResolveParams) (interface{}, error) {
-	// Получаем userID из контекста
 	userID, ok := p.Context.Value("userID").(primitive.ObjectID)
 	if !ok {
-		// Если нет userID, возвращаем все проекты (для совместимости)
 		projects, err := r.Storage.ProjectStorage.GetAllProjects()
 		if err != nil {
 			return nil, err
@@ -59,7 +54,6 @@ func (r *GraphQLResolver) GetProjects(p graphql.ResolveParams) (interface{}, err
 	return result, nil
 }
 
-// GetTasksByProject получает задачи проекта
 func (r *GraphQLResolver) GetTasksByProject(p graphql.ResolveParams) (interface{}, error) {
 	projectID, ok := p.Args["projectId"].(string)
 	if !ok {
@@ -79,7 +73,6 @@ func (r *GraphQLResolver) GetTasksByProject(p graphql.ResolveParams) (interface{
 	return result, nil
 }
 
-// CreateProject создает новый проект
 func (r *GraphQLResolver) CreateProject(p graphql.ResolveParams) (interface{}, error) {
 	title, _ := p.Args["title"].(string)
 	description, _ := p.Args["description"].(string)
@@ -89,7 +82,6 @@ func (r *GraphQLResolver) CreateProject(p graphql.ResolveParams) (interface{}, e
 		status = "active"
 	}
 
-	// Получаем userID из контекста
 	userID, ok := p.Context.Value("userID").(primitive.ObjectID)
 	if !ok {
 		userID = primitive.NilObjectID
@@ -113,7 +105,6 @@ func (r *GraphQLResolver) CreateProject(p graphql.ResolveParams) (interface{}, e
 	return *project, nil
 }
 
-// UpdateProject обновляет проект
 func (r *GraphQLResolver) UpdateProject(p graphql.ResolveParams) (interface{}, error) {
 	id, ok := p.Args["id"].(string)
 	if !ok {
@@ -149,7 +140,6 @@ func (r *GraphQLResolver) UpdateProject(p graphql.ResolveParams) (interface{}, e
 	return *project, nil
 }
 
-// DeleteProject удаляет проект
 func (r *GraphQLResolver) DeleteProject(p graphql.ResolveParams) (interface{}, error) {
 	id, ok := p.Args["id"].(string)
 	if !ok {
@@ -164,7 +154,6 @@ func (r *GraphQLResolver) DeleteProject(p graphql.ResolveParams) (interface{}, e
 	return true, nil
 }
 
-// CreateTask создает новую задачу
 func (r *GraphQLResolver) CreateTask(p graphql.ResolveParams) (interface{}, error) {
 	projectID, ok := p.Args["projectId"].(string)
 	if !ok {
@@ -186,7 +175,6 @@ func (r *GraphQLResolver) CreateTask(p graphql.ResolveParams) (interface{}, erro
 		status = "todo"
 	}
 
-	// Получаем userID из контекста
 	userID, ok := p.Context.Value("userID").(primitive.ObjectID)
 	if !ok {
 		userID = primitive.NilObjectID
