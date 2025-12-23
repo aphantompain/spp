@@ -1,0 +1,29 @@
+.podcast-list {
+  width: 100%;
+}
+
+.podcast-list-header {
+  margin-bottom: 24px;
+}
+
+.podcast-list-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.podcast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+  padding-bottom: 100px;
+}
+
+@media (max-width: 768px) {
+  .podcast-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+}
+

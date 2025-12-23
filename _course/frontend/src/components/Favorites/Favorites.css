@@ -1,0 +1,44 @@
+.favorites-container {
+  padding: 24px;
+}
+
+.favorites-header {
+  margin-bottom: 32px;
+}
+
+.favorites-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.favorites-count {
+  font-size: 14px;
+  color: #b3b3b3;
+  margin: 0;
+}
+
+.favorites-empty {
+  text-align: center;
+  padding: 100px 20px;
+  color: #b3b3b3;
+}
+
+.favorites-empty p:first-child {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.favorites-empty-hint {
+  font-size: 14px;
+  color: #666666;
+  margin-top: 8px;
+}
+
+.podcast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+}
+

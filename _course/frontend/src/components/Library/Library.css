@@ -1,0 +1,39 @@
+.library-container {
+  padding: 24px;
+}
+
+.library-header {
+  margin-bottom: 32px;
+}
+
+.library-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.library-count {
+  font-size: 14px;
+  color: #b3b3b3;
+  margin: 0;
+}
+
+.library-empty {
+  text-align: center;
+  padding: 100px 20px;
+  color: #b3b3b3;
+}
+
+.library-empty-hint {
+  font-size: 14px;
+  color: #666666;
+  margin-top: 8px;
+}
+
+.podcast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+}
+

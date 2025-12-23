@@ -1,0 +1,37 @@
+.episode-list {
+  width: 100%;
+}
+
+.episode-list-header {
+  display: grid;
+  grid-template-columns: 40px 1fr 120px 100px;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #282828;
+  margin-bottom: 8px;
+}
+
+.episode-list-header span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b3b3b3;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.episode-list-empty {
+  text-align: center;
+  padding: 48px;
+  color: #b3b3b3;
+}
+
+@media (max-width: 768px) {
+  .episode-list-header {
+    grid-template-columns: 30px 1fr 80px;
+  }
+
+  .episode-list-header-duration {
+    display: none;
+  }
+}
+

@@ -1,0 +1,189 @@
+.player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  background-color: #181818;
+  border-top: 1px solid #282828;
+  z-index: 1000;
+  padding: 0 16px;
+}
+
+.player-content {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  max-width: 100%;
+  gap: 16px;
+}
+
+.player-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 30%;
+  min-width: 180px;
+}
+
+.player-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  object-fit: cover;
+  background-color: #333;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.player-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-author {
+  font-size: 12px;
+  color: #b3b3b3;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 722px;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.player-control-button {
+  background: transparent;
+  border: none;
+  color: #b3b3b3;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-control-button:hover {
+  color: #ffffff;
+}
+
+.player-play-button {
+  width: 32px;
+  height: 32px;
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+.player-play-button:hover {
+  background-color: #ffffff;
+  color: #000000;
+  transform: scale(1.1);
+}
+
+.player-progress-container {
+  width: 100%;
+  cursor: pointer;
+}
+
+.player-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #535353;
+  border-radius: 2px;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.player-progress-fill {
+  height: 100%;
+  background-color: #b3b3b3;
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.player-progress-container:hover .player-progress-fill {
+  background-color: #1db954;
+}
+
+.player-progress-container:hover .player-progress-bar {
+  height: 6px;
+}
+
+.player-time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #b3b3b3;
+  width: 100%;
+}
+
+.player-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 30%;
+  justify-content: flex-end;
+  min-width: 180px;
+}
+
+.player-button {
+  background: transparent;
+  border: none;
+  color: #b3b3b3;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  transition: color 0.2s ease;
+}
+
+.player-button:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .player-left {
+    flex: 0 0 25%;
+    min-width: 120px;
+  }
+
+  .player-center {
+    flex: 1;
+  }
+
+  .player-right {
+    flex: 0 0 15%;
+    min-width: 80px;
+  }
+
+  .player-info {
+    display: none;
+  }
+}
+
