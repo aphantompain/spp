@@ -1,4 +1,3 @@
-// internal/graphql/schema.go
 package graphql
 
 import (
@@ -15,7 +14,6 @@ type GraphQLResolver struct {
 func NewGraphQLSchema(storage *storage.MongoDBStorage) (graphql.Schema, error) {
 	resolver := &GraphQLResolver{Storage: storage}
 
-	// Типы для GraphQL
 	taskType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Task",
 		Fields: graphql.Fields{
@@ -111,7 +109,6 @@ func NewGraphQLSchema(storage *storage.MongoDBStorage) (graphql.Schema, error) {
 		},
 	})
 
-	// Query тип
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
@@ -140,7 +137,6 @@ func NewGraphQLSchema(storage *storage.MongoDBStorage) (graphql.Schema, error) {
 		},
 	})
 
-	// Mutation тип
 	rootMutation := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: graphql.Fields{
